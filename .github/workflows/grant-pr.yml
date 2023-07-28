@@ -1,0 +1,41 @@
+name: Grant PR action
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  echo_hello_world:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is approved and merged
+        if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
+        id: check_pr
+        run: echo "PR_APPROVED"
+      - name: Check if PR is merged
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
+        id: check_pr_merged
+        run: echo "PR_MERGED"
+      - name: Check if PR is linked to an issue with the label "grant" assigned by code owner
+        if: ${{ steps.check_pr_merged.outputs.PR_MERGED }}
+        run: |
+          ISSUE_NUMBER=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.number')
+          LABELS=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.labels[] | select(.name == "grant") | select(.author_association == "OWNER")')
+          if [[ ! -z "${LABELS}" ]]; then
+            echo "ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER"
+          fi
+      - name: Extract "Address" value from PR description
+        if: ${{ steps.check_pr_merged.outputs.ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER }}
+        run: |
+          PR_DESCRIPTION=$(curl -s "${{ github.event.pull_request.url }}" | jq -r '.body')
+          ADDRESS_VALUE=$(echo "${PR_DESCRIPTION}" | grep -oP '(?<=Address: ).*')
+          echo "::set-output name=ADDRESS_VALUE::${ADDRESS_VALUE}"
+      - name: Echo "Hello World" and extracted value
+        if: ${{ steps.check_pr.outputs.PR_APPROVED && steps.check_pr_merged.outputs.ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER }}
+        run: |
+          echo "Hello World"
+          echo "Address Value: ${{ steps.extract_address_value.outputs.ADDRESS_VALUE }}"
