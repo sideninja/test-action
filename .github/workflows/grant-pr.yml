@@ -22,16 +22,9 @@ jobs:
           echo "PR Description:"
           echo "${PR_DESCRIPTION}"
           
-          ISSUE_NUMBER=$(echo "${PR_DESCRIPTION}" | grep -ioE 'closes\s+#\d+' | grep -oE '\d+')
+          ISSUE_NUMBER=$(echo "${PR_DESCRIPTION}" | grep -iqE 'closes\s+#\d+' | grep -qE '\d+')
           echo "Issue Number:"
           echo "${ISSUE_NUMBER}"
           ISSUE_LABELS=$(curl -s "${{ github.repository }}/issues/${ISSUE_NUMBER}" | jq -r '.labels[] | select(.name == "grant")')
           echo "Labels: "
           echo "${ISSUE_LABELS}"
-
-      - name: Echo "Hello World" and extracted value
-        run: |
-          echo "linked issue: ${{ steps.check_pr_merged.outputs.LINKED_ISSUES }}"
-          echo "address value: ${{ steps.address.ADDRESS_VALUE }}"
-          echo "Hello World"
-          echo "Address Value: ${{ steps.extract_address_value.outputs.ADDRESS_VALUE }}"
