@@ -27,7 +27,7 @@ jobs:
           echo "Issue Number:"
           echo "${ISSUE_NUMBER}"
 
-          ISSUE_LABELS=$(curl -s "${{ github.repository.url }}/issues/${ISSUE_NUMBER}" | jq -r '.labels[] | select(.name == "grant")')
+          ISSUE_LABELS=$(curl -s "${{ github.event.repository.url }}/issues/${ISSUE_NUMBER}" | jq -r '.labels[] | select(.name == "grant")')
           echo "Labels: "
           echo "${ISSUE_LABELS}"
           
