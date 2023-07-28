@@ -40,12 +40,6 @@ jobs:
       - name: Check CODEOWNERS
         run: |
           username=${{ steps.address.outputs.GRANT_ASSIGNER }}
-          if grep -q "^.*\s$username$" CODEOWNERS; then
-            echo "User $username is a codeowner."
-            exit 0
-          else
-            echo "User $username is not a codeowner."
-            exit 1
-          fi
-          
-
+          OWNER_FOUND=$(grep -c \@$username CODEOWNERS)
+          if OWNER_FOUND == 1; then 
+            echo "Paying out 1 Flow to address ${{ steps.address.outputs.ADDRESS_VALUE }}"
