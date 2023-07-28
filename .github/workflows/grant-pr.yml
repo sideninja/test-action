@@ -32,7 +32,7 @@ jobs:
         run: |
           for issue_number in ${{ steps.check_pr_merged.outputs.LINKED_ISSUES }}; do
             ISSUE_LABELS=$(curl -s "${{ github.repository }}/issues/${issue_number}" | jq -r '.labels[] | select(.name == "grant")')
-            echo "check issue ${issue_number} and labels ${{ ISSUE_LABELS }}"
+            echo "check issue ${issue_number} and labels ${ ISSUE_LABELS }"
             if [[ ! -z "${ISSUE_LABELS}" ]]; then
               echo "::set-output name=HAS_GRANT_LABEL::true"
               exit 0
