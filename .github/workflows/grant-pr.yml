@@ -19,7 +19,7 @@ jobs:
           ADDRESS_VALUE=$(echo "${PR_DESCRIPTION}" | grep -ioP '(?<=Address: ).*')
           echo "::set-output name=ADDRESS_VALUE::${ADDRESS_VALUE}"
           echo "Address"
-          echo "{ADDRESS_VALUE}"
+          echo "${ADDRESS_VALUE}"
           echo "PR Description:"
           echo "${PR_DESCRIPTION}"
           
