@@ -23,6 +23,6 @@ jobs:
           echo "PR Description:"
           echo "${PR_DESCRIPTION}"
           
-          ISSUE_NUMBER=$(echo "${PR_DESCRIPTION}" | grep -iqE 'closes\s+#\d+' | grep -qE '\d+')
+          ISSUE_NUMBER=$(echo "${PR_DESCRIPTION}" | grep -ioP 'closes\s+#\d+' | grep -oP '\d+')
           echo "Issue Number:"
           echo "${ISSUE_NUMBER}"
