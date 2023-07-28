@@ -27,9 +27,10 @@ jobs:
           echo "Issue Number:"
           echo "${ISSUE_NUMBER}"
 
-          ISSUE_LABELS=$(curl -s "${{ github.event.repository.url }}/issues/${ISSUE_NUMBER}" | jq -r '.labels[] | select(.name == "grant")')
-          echo "Labels: "
-          echo "${ISSUE_LABELS}"
+          ISSUE_TIMELINE=$(curl -s "${{ github.event.repository.url }}/issues/${ISSUE_NUMBER}/timeline")
+          GRANT_ASSIGNER=$(echo "${ISSUE_TIMELINE}" | jq '.[] | select(.event == "labeled") | .actor.login')
+          echo "grant assigner: "
+          echo "${GRANT_ASSIGNER}"
           
           
 
