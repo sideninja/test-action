@@ -32,5 +32,20 @@ jobs:
           echo "grant assigner: "
           echo "${GRANT_ASSIGNER}"
           
+          echo "::set-output name=GRANT_ASSIGNER::${GRANT_ASSIGNER}"
+          
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Check CODEOWNERS
+        run: |
+          username=${{ steps.address.outputs.GRANT_ASSIGNER }}
+          if grep -q "^.*\s$username$" CODEOWNERS; then
+            echo "User $username is a codeowner."
+            exit 0
+          else
+            echo "User $username is not a codeowner."
+            exit 1
+          fi
           
 
