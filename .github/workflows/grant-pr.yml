@@ -32,7 +32,7 @@ jobs:
         run: |
           for issue_number in ${{ steps.check_pr_merged.outputs.LINKED_ISSUES }}; do
             ISSUE_LABELS=$(curl -s "${{ github.repository }}/issues/${issue_number}" | jq -r '.labels[] | select(.name == "grant")')
-            echo "check issue ${issue_number} and labels ${ISSUE_LABELS}"
+            echo "check issue ${{ issue_number }} and labels ${{ ISSUE_LABELS }}"
             if [[ ! -z "${ISSUE_LABELS}" ]]; then
               echo "::set-output name=HAS_GRANT_LABEL::true"
               exit 0
@@ -41,7 +41,7 @@ jobs:
           echo "::set-output name=HAS_GRANT_LABEL::false"
       - name: Echo "Hello World" and extracted value
         run: |
-          echo "linked issue: ${steps.check_pr_merged.outputs.LINKED_ISSUES}"
-          echo "address value: ${steps.address.ADDRESS_VALUE}"
+          echo "linked issue: ${{ steps.check_pr_merged.outputs.LINKED_ISSUES }}"
+          echo "address value: ${{ steps.address.ADDRESS_VALUE }}"
           echo "Hello World"
           echo "Address Value: ${{ steps.extract_address_value.outputs.ADDRESS_VALUE }}"
