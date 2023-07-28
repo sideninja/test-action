@@ -1,0 +1,21 @@
+name: Extract PR Description on Issue Closed with "grant" Label
+
+on:
+  issues:
+    types:
+      - closed
+
+jobs:
+  extract_pr_description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if the issue has the "grant" label
+        if: ${{ github.event.issue.labels | map(.name) | contains('grant') }}
+        id: check_grant_label
+        run: echo "ISSUE_HAS_GRANT_LABEL"
+      - name: Extract PR description
+        if: ${{ steps.check_grant_label.outputs.ISSUE_HAS_GRANT_LABEL }}
+        run: |
+          PR_NUMBER=$(curl -s "${{ github.event.issue.pull_request.url }}" | jq -r '.number')
+          PR_DESCRIPTION=$(curl -s "${{ github.repository }}/pulls/${PR_NUMBER}" | jq -r '.body')
+          echo "::set-output name=PR_DESCRIPTION::${PR_DESCRIPTION}"
