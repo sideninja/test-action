@@ -22,9 +22,13 @@ jobs:
         run: |
           ISSUE_NUMBER=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.number')
           LABELS=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.labels[] | select(.name == "grant") | select(.author_association == "OWNER")')
+          echo "labels: ${LABELS}"
+          echo "issue number: ${ISSUE_NUMBER}"
           if [[ ! -z "${LABELS}" ]]; then
             PR_DESCRIPTION=$(curl -s "${{ github.event.pull_request.url }}" | jq -r '.body')
+            echo "pr desc ${PR_DESCRIPTION}"
             if echo "${PR_DESCRIPTION}" | grep -iqE '(close|closes)\s+#'"${ISSUE_NUMBER}"'\b'; then
+              echo "has grant label!!!"
               echo "ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER_AND_LINKED"
             fi
           fi
