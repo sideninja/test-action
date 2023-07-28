@@ -43,3 +43,4 @@ jobs:
           OWNER_FOUND=$(grep -c \@$username CODEOWNERS)
           if OWNER_FOUND == 1; then 
             echo "Paying out 1 Flow to address ${{ steps.address.outputs.ADDRESS_VALUE }}"
+          fi
