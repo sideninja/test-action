@@ -12,34 +12,36 @@ jobs:
   echo_hello_world:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if PR is approved and merged
-        if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
-        id: check_pr
-        run: echo "PR_APPROVED"
       - name: Check if PR is merged and linked to an issue with the label "grant" assigned by code owner
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
         id: check_pr_merged
         run: |
-          ISSUE_NUMBER=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.number')
-          LABELS=$(curl -s "${{ github.event.pull_request.issue_url }}" | jq -r '.labels[] | select(.name == "grant") | select(.author_association == "OWNER")')
-          echo "labels: ${LABELS}"
-          echo "issue number: ${ISSUE_NUMBER}"
-          if [[ ! -z "${LABELS}" ]]; then
-            PR_DESCRIPTION=$(curl -s "${{ github.event.pull_request.url }}" | jq -r '.body')
-            echo "pr desc ${PR_DESCRIPTION}"
-            if echo "${PR_DESCRIPTION}" | grep -iqE '(close|closes)\s+#'"${ISSUE_NUMBER}"'\b'; then
-              echo "has grant label!!!"
-              echo "ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER_AND_LINKED"
-            fi
+          PR_DESCRIPTION=$(curl -s "${{ github.event.pull_request.url }}" | jq -r '.body')
+          LINKED_ISSUES=$(echo "${PR_DESCRIPTION}" | grep -ioE 'closes\s+#\d+' | grep -oE '\d+')
+          if [[ ! -z "${LINKED_ISSUES}" ]]; then
+            echo "::set-output name=LINKED_ISSUES::${LINKED_ISSUES}"
+            echo "ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER_AND_LINKED"
           fi
       - name: Extract "Address" value from PR description
-        if: ${{ steps.check_pr_merged.outputs.ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER_AND_LINKED }}
+        id: address
         run: |
           PR_DESCRIPTION=$(curl -s "${{ github.event.pull_request.url }}" | jq -r '.body')
           ADDRESS_VALUE=$(echo "${PR_DESCRIPTION}" | grep -ioP '(?<=Address: ).*')
           echo "::set-output name=ADDRESS_VALUE::${ADDRESS_VALUE}"
-      - name: Echo "Hello World" and extracted value
-        if: ${{ steps.check_pr.outputs.PR_APPROVED && steps.check_pr_merged.outputs.ISSUE_HAS_GRANT_LABEL_ASSIGNED_BY_CODEOWNER_AND_LINKED }}
+      - name: Check if linked issues have the "grant" label
         run: |
+          for issue_number in ${{ steps.check_pr_merged.outputs.LINKED_ISSUES }}; do
+            ISSUE_LABELS=$(curl -s "${{ github.repository }}/issues/${issue_number}" | jq -r '.labels[] | select(.name == "grant")')
+            echo "check issue ${issue_number} and labels ${ISSUE_LABELS}"
+            if [[ ! -z "${ISSUE_LABELS}" ]]; then
+              echo "::set-output name=HAS_GRANT_LABEL::true"
+              exit 0
+            fi
+          done
+          echo "::set-output name=HAS_GRANT_LABEL::false"
+      - name: Echo "Hello World" and extracted value
+        run: |
+          echo "linked issue: ${steps.check_pr_merged.outputs.LINKED_ISSUES}"
+          echo "address value: ${steps.address.ADDRESS_VALUE}"
           echo "Hello World"
           echo "Address Value: ${{ steps.extract_address_value.outputs.ADDRESS_VALUE }}"
